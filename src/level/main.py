@@ -37,3 +37,15 @@ class Level:
             """,
             (user_id, xp)
         )
+
+    @staticmethod
+    def get_user_xp(user_id: int) -> int:
+        conn = sqlite3.connect("database/level.db")
+        try:
+            row = conn.execute(
+                "SELECT xp FROM users WHERE user_id = ?",
+                (user_id,)
+            ).fetchone()
+            return row[0] if row is not None else 0
+        finally:
+            conn.close()
