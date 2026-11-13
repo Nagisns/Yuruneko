@@ -19,3 +19,21 @@ class Level:
 
         conn.commit()
         conn.close()
+
+    @staticmethod
+    def add_xp(user_id: int, xp: int):
+        conn = sqlite3.connect("database/level.db")
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "INSERT OR IGNORE INTO users (user_id) VALUES (?)",
+            (user_id,)
+        )
+
+        cursor.execute(
+            "UPDATE users SET xp = xp + ? WHERE user_id = ?",
+            (xp, user_id)
+        )
+
+        conn.commit()
+        conn.close()
