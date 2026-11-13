@@ -17,7 +17,7 @@ logging.getLogger("discord").setLevel(logging.WARNING)
 
 bot: MyBot = MyBot(
     command_prefix=commands.when_mentioned,
-    intents=discord.Intents(guilds=True),
+    intents=discord.Intents(guilds=True, guild_messages=True),
     help_command=None,
 )
 
