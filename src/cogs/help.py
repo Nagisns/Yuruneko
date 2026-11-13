@@ -13,6 +13,7 @@ class HelpCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="help", description="コマンドの一覧を表示します")
+    @app_commands.checks.cooldown(rate=1.0, per=5.0)
     async def help(self, interaction: discord.Interaction) -> None:
         embed: discord.Embed = discord.Embed(
             title="コマンド一覧",
