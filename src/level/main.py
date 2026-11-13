@@ -49,3 +49,19 @@ class Level:
             return row[0] if row is not None else 0
         finally:
             conn.close()
+
+    @staticmethod
+    def get_user_level(user_id: int) -> int:
+        """Reach levels 2, 5, and 10 at 100, 3000, and 15000 cumulative XP."""
+        xp = Level.get_user_xp(user_id)
+        level = 1
+        required_xp = 100
+
+        while xp >= required_xp:
+            level += 1
+            if level < 5:
+                required_xp += 100 * level**2
+            else:
+                required_xp += 300 * (level + 1)
+
+        return level
