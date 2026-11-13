@@ -6,34 +6,34 @@ import sqlite3
 
 class Level:
     @staticmethod
-    def create():
+    def _execute(sql: str, params: tuple[int, ...] = ()) -> None:
         conn = sqlite3.connect("database/level.db")
-        cursor = conn.cursor()
+        try:
+            conn.execute(sql, params)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
-        cursor.execute("""
+    @staticmethod
+    def create() -> None:
+        Level._execute(
+            """
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY,
                 xp INTEGER NOT NULL DEFAULT 0
             )
-        """)
-
-        conn.commit()
-        conn.close()
+            """
+        )
 
     @staticmethod
-    def add_xp(user_id: int, xp: int):
-        conn = sqlite3.connect("database/level.db")
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "INSERT OR IGNORE INTO users (user_id) VALUES (?)",
-            (user_id,)
+    def add_xp(user_id: int, xp: int) -> None:
+        Level._execute(
+            """
+            INSERT INTO users (user_id, xp) VALUES (?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET xp = users.xp + excluded.xp
+            """,
+            (user_id, xp)
         )
-
-        cursor.execute(
-            "UPDATE users SET xp = xp + ? WHERE user_id = ?",
-            (xp, user_id)
-        )
-
-        conn.commit()
-        conn.close()
