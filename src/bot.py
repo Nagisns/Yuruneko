@@ -24,10 +24,6 @@ bot: MyBot = MyBot(
 async def on_ready() -> None:
     logging.info(f"Logged in {bot.user}")
 
-@bot.tree.command(name="ping", description="動作確認")
-async def ping(interaction: discord.Interaction) -> None:
-    await interaction.response.send_message("Pong!")
-
 if __name__ == "__main__":
     load_dotenv()
 
