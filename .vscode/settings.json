@@ -1,6 +1,7 @@
 {
     "material-icon-theme.folders.associations": {
         "cogs": "src",
+        "events": "src",
         "level": "tools",
     },
 }
