@@ -9,6 +9,7 @@ from types import ModuleType
 from discord.ext import commands
 
 import cogs
+import events
 
 class MyBot(commands.Bot):
     async def setup_hook(self) -> None:
@@ -21,10 +22,9 @@ class MyBot(commands.Bot):
                 if not module.name.rsplit(".", 1)[-1].startswith("_")
             )
 
-        extensions_cogs: list[str] = _get_extensions(cogs)
-
-        for extension in extensions_cogs:
-            await self.load_extension(extension)
+        for package in (cogs, events):
+            for extension in _get_extensions(package):
+                await self.load_extension(extension)
 
         synced = await self.tree.sync()
         logging.info(f"Synced {len(synced)} commands.")

@@ -24,10 +24,6 @@ bot: MyBot = MyBot(
 error_handler: ErrorHandler = ErrorHandler()
 bot.tree.error(error_handler.on_app_command_error)
 
-@bot.event
-async def on_ready() -> None:
-    logging.info(f"Logged in {bot.user}")
-
 if __name__ == "__main__":
     load_dotenv()
 
