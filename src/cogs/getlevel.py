@@ -2,6 +2,9 @@
 # Licensed under the MIT License.
 # See the LICENSE file for details.
 
+import asyncio 
+from pathlib import Path
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -30,4 +33,6 @@ class GetLevelCog(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
 async def setup(bot: commands.Bot) -> None:
+    Path("database").mkdir(exist_ok=True)
+    await asyncio.to_thread(Level.create)
     await bot.add_cog(GetLevelCog(bot))
