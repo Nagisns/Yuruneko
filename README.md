@@ -1,4 +1,4 @@
-# Calm
+# Yuruneko
 
 **v0.3.0** — A Discord bot with slash commands and an XP-based leveling system, built with discord.py.
 The bot provides `/help` to list commands, `/ping` to respond with `Pong!`, and `/level` to display your level and cumulative XP.
