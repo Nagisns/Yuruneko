@@ -9,7 +9,7 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 
-from level import XpRepository
+from level import Level, XpRepository
 
 class XpCog(commands.Cog):
     def __init__(self) -> None:
@@ -20,16 +20,36 @@ class XpCog(commands.Cog):
         if message.author.bot or message.guild is None:
             return
 
-        user_id = message.author.id
-        now = monotonic()
-        last_xp_at = self._last_xp_at.get(user_id)
+        user_id: int = message.author.id
+        now: float = monotonic()
+        last_xp_at: float | None = self._last_xp_at.get(user_id)
 
         if last_xp_at is not None and now - last_xp_at < 5.0:
             return
         
         self._last_xp_at[user_id] = now
 
-        await asyncio.to_thread(XpRepository.add_xp, user_id=user_id, xp=10)
+        xp_gain: int = 10
+        new_xp: int = await asyncio.to_thread(XpRepository.add_xp, user_id=user_id, xp=xp_gain)
+
+        old_level: int = Level.calculate_level(new_xp - xp_gain)
+        new_level: int = Level.calculate_level(new_xp)
+
+        if new_level > old_level:
+            embed: discord.Embed = discord.Embed(
+                title="🎉 レベルアップしました！",
+                description=f"{message.author.mention} さん、おめでとうございます！",
+                color=discord.Color.blue(),
+            )
+            embed.set_author(name=message.author.display_name)
+            embed.set_thumbnail(url=message.author.display_avatar.url)
+            embed.add_field(
+                name="レベル", value=f"**{old_level} → {new_level}**", inline=True
+            )
+            embed.add_field(name="累計XP", value=f"**{new_xp:,}** XP", inline=True)
+            embed.set_footer(text="チャットに参加して、次のレベルを目指そう！")
+
+            await message.channel.send(embed=embed)
 
 async def setup(bot: commands.Bot) -> None:
     Path("database").mkdir(exist_ok=True)
