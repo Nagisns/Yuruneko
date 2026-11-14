@@ -21,6 +21,7 @@ class HelpCog(commands.Cog):
                 """
                 `/help` - コマンドの一覧を表示します
                 `/ping` - Botが応答しているか確認します
+                `/level` - 自分のレベルと累計XPを表示します
                 """
             ).strip(),
             color=discord.Color.blue(),
