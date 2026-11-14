@@ -9,7 +9,7 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 
-from level.main import Level
+from level import Level
 
 class XpCog(commands.Cog):
     def __init__(self) -> None:
