@@ -1,6 +1,6 @@
 # Yuruneko
 
-**v0.3.0** — A Discord bot with slash commands and an XP-based leveling system, built with discord.py.
+**v0.3.1** — A Discord bot with slash commands and an XP-based leveling system, built with discord.py.
 The bot provides `/help` to list commands, `/ping` to respond with `Pong!`, and `/level` to display your level and cumulative XP.
 Server messages earn XP, which is stored locally in SQLite.
 Commands are organized into automatically loaded Cogs, with per-user cooldowns and shared error handling.
@@ -83,7 +83,8 @@ Each command can be used once every 5 seconds per user. The cooldowns for `/help
 
 ## XP and Levels
 
-Each server message from a non-bot user grants 10 XP. Bot messages and direct messages do not grant XP.
+Server messages from non-bot users grant 10 XP, limited to one award every 5 seconds per user. Bot messages and direct messages do not grant XP.
+The XP cooldown is shared across servers and is independent of slash command cooldowns.
 XP is tracked by Discord user ID and shared across servers where this bot runs.
 Users start at level 1 with 0 XP, and levels are calculated from cumulative XP without spending it.
 
@@ -93,6 +94,8 @@ Users start at level 1 with 0 XP, and levels are calculated from cumulative XP w
 | 2 | 100 |
 | 5 | 3,000 |
 | 10 | 15,000 |
+
+When a message raises a user's level, the bot sends a notification in the same channel with the user's mention, display name, avatar, previous and new levels, and cumulative XP.
 
 XP is stored in `database/level.db`, relative to the working directory. Run the bot from the project root as shown above.
 The database directory and user table are created automatically when the Cogs load, and existing XP is retained across restarts.
@@ -109,7 +112,10 @@ If the interaction has already been answered, the bot sends the error message as
 ## Project Structure
 
 ```text
-Calm/
+Yuruneko/
+├── .github/
+│   └── workflows/
+│       └── tests.yml     # GitHub Actions test workflow
 ├── src/
 │   ├── bot.py            # Bot entry point, intents, and error handler registration
 │   ├── mybot.py          # MyBot, Cog loading, and command synchronization
@@ -125,14 +131,17 @@ Calm/
 │   │   └── xp.py         # Message XP rewards
 │   └── level/
 │       ├── __init__.py
-│       └── main.py       # SQLite XP storage and level calculation
+│       ├── main.py       # Pure level calculation
+│       └── repository.py # SQLite XP storage
+├── tests/                # unittest tests using isolated temporary databases
 ├── database/             # Created automatically and excluded from Git
 │   └── level.db          # Persistent user XP
-├── .env              # Bot token (excluded from Git)
+├── .env                  # Bot token (excluded from Git)
 ├── .gitignore
-├── pyproject.toml    # Project settings and dependencies
-├── uv.lock           # Locked dependency versions
-├── requirements.txt  # Dependencies for pip
+├── .python-version       # Python version used by uv and CI
+├── pyproject.toml        # Project settings and dependencies
+├── uv.lock               # Locked dependency versions
+├── requirements.txt      # Dependencies for pip
 ├── README.md
 ├── CHANGELOG.md
 └── LICENSE
@@ -149,6 +158,21 @@ Create an extension module in `src/cogs/`, following `help.py` or `ping.py`:
 
 `MyBot` automatically loads modules directly inside `src/cogs/`, followed by `src/events/`, sorting each package's modules by name and skipping names that start with `_`.
 Event listeners belong in `src/events/` and use `@commands.Cog.listener()` with the same `async def setup(bot)` registration pattern.
+
+## Tests and CI
+
+Run the tests from the project root:
+
+```powershell
+uv run --locked python -m unittest discover -v
+```
+
+The tests use the standard library's `unittest` framework with no additional test dependencies.
+They cover level thresholds, XP persistence and user isolation, message XP rewards, cooldowns, and level-up notifications.
+Each database test uses a temporary directory, while Discord messages and the clock are mocked, so no bot token or Discord connection is required.
+
+The [GitHub Actions workflow](.github/workflows/tests.yml) runs the tests on Ubuntu for pushes and pull requests.
+It installs the Python version from `.python-version` and uses `uv.lock` to install dependencies.
 
 ## Changelog and License
 

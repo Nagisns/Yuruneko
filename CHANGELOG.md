@@ -1,6 +1,27 @@
 # Changelog
 
-Release history for Calm.
+Release history for Yuruneko.
+
+## v0.3.1 - 2026-11-14
+
+### Added
+
+- A five-second per-user cooldown for message XP rewards, shared across servers.
+- Level-up notifications in the message channel, showing the user's mention, display name, avatar, previous and new levels, and cumulative XP.
+- A unittest suite covering initial levels and key XP thresholds, XP persistence and user isolation, message reward conditions, cooldowns, and level-up notifications.
+- A GitHub Actions workflow that runs tests on pushes and pull requests with uv and locked dependencies.
+
+### Changed
+
+- Separated pure level calculation in `Level.calculate_level` from SQLite XP storage in `XpRepository`, exposing both through the `level` package.
+- Made XP updates return the saved total directly for level-up detection.
+- Pinned the project's Python version to 3.15 through `.python-version`.
+- Renamed the README title to Yuruneko and updated the XP behavior, project structure, and testing instructions.
+
+### Fixed
+
+- Moved `/level` XP lookups and XP event database initialization to worker threads to avoid blocking the event loop.
+- Made `/level` calculate the level and display cumulative XP from a single database lookup.
 
 ## v0.3.0 - 2026-11-14
 
