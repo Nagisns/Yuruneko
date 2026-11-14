@@ -9,7 +9,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from level import Level
+from level import Level, XpRepository
 
 class GetLevelCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -18,7 +18,7 @@ class GetLevelCog(commands.Cog):
     @app_commands.command(name="level", description="自分のレベルを表示します")
     @app_commands.checks.cooldown(rate=1.0, per=5.0)
     async def level(self, interaction: discord.Interaction) -> None:
-        xp: int = await asyncio.to_thread(Level.get_user_xp, user_id=interaction.user.id)
+        xp: int = await asyncio.to_thread(XpRepository.get_user_xp, user_id=interaction.user.id)
         level: int = Level.calculate_level(xp)
 
         embed: discord.Embed = discord.Embed(
@@ -34,5 +34,5 @@ class GetLevelCog(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     Path("database").mkdir(exist_ok=True)
-    await asyncio.to_thread(Level.create)
+    await asyncio.to_thread(XpRepository.create)
     await bot.add_cog(GetLevelCog(bot))

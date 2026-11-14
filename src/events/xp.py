@@ -9,7 +9,7 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 
-from level import Level
+from level import XpRepository
 
 class XpCog(commands.Cog):
     def __init__(self) -> None:
@@ -29,9 +29,9 @@ class XpCog(commands.Cog):
         
         self._last_xp_at[user_id] = now
 
-        await asyncio.to_thread(Level.add_xp, user_id=user_id, xp=10)
+        await asyncio.to_thread(XpRepository.add_xp, user_id=user_id, xp=10)
 
 async def setup(bot: commands.Bot) -> None:
     Path("database").mkdir(exist_ok=True)
-    Level.create()
+    await asyncio.to_thread(XpRepository.create)
     await bot.add_cog(XpCog())

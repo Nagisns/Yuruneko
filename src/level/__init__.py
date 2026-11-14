@@ -1,3 +1,4 @@
 from .main import Level
+from .repository import XpRepository
 
-__all__ = ["Level"]
+__all__ = ["Level", "XpRepository"]
