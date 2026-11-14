@@ -2,6 +2,31 @@
 
 Release history for Calm.
 
+## v0.3.0 - 2026-11-14
+
+### Added
+
+- A `/level` command that displays the invoking user's level and cumulative XP in an embed with their display name and avatar.
+- An independent per-user cooldown of one use every 5 seconds for `/level`.
+- Message XP rewards through `XpCog`: 10 XP per server message from a non-bot user, excluding direct messages.
+- Persistent SQLite XP storage in `database/level.db`, keyed by Discord user ID and shared across servers.
+- XP lookup and level calculation, starting at level 1 and reaching levels 2, 5, and 10 at 100, 3,000, and 15,000 cumulative XP.
+- The `guild_messages` gateway intent to receive server message events for XP rewards.
+- A `/level` entry in the `/help` command list.
+
+### Changed
+
+- Extended `MyBot` to load event Cogs from `src/events/` after command Cogs from `src/cogs/`.
+- Moved successful-login logging into `ReadyCog` in `src/events/ready.py`.
+- Centralized SQLite database operations and level calculation in `src/level/main.py`.
+- Moved message XP updates to a worker thread to avoid blocking the bot's event loop.
+- Excluded local database files from Git.
+- Updated the README with the leveling system, `/level` command, database behavior, gateway intents, and project structure.
+
+### Fixed
+
+- Ensured the database directory and user table exist when loading `GetLevelCog` and `XpCog`, including on first startup.
+
 ## v0.2.0 - 2026-11-14
 
 ### Added

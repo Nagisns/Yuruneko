@@ -1,7 +1,8 @@
 # Calm
 
-**v0.2.0** — A minimal Discord bot with slash commands, built with discord.py.
-The bot provides `/help` to list commands and `/ping` to respond with `Pong!`.
+**v0.3.0** — A Discord bot with slash commands and an XP-based leveling system, built with discord.py.
+The bot provides `/help` to list commands, `/ping` to respond with `Pong!`, and `/level` to display your level and cumulative XP.
+Server messages earn XP, which is stored locally in SQLite.
 Commands are organized into automatically loaded Cogs, with per-user cooldowns and shared error handling.
 Dependencies are managed with uv, and python-dotenv loads the bot token from `.env`.
 
@@ -20,7 +21,7 @@ Dependencies are managed with uv, and python-dotenv loads the bot token from `.e
 3. On the **Installation** page, add the `bot` and `applications.commands` scopes under **Guild Install**.
 4. Use the **Install Link** to add the bot to your server.
 
-The bot enables the `guilds` gateway intent to maintain server state.
+The bot enables the `guilds` gateway intent to maintain server state and `guild_messages` to receive server message events for XP rewards.
 No privileged gateway intents are required.
 
 ### 2. Install Dependencies
@@ -54,16 +55,17 @@ Run this command from the project root. uv handles virtual environment activatio
 uv run src/bot.py
 ```
 
-The bot automatically loads Cog extensions from `src/cogs/` and syncs global slash commands with Discord on startup.
+The bot automatically loads Cog extensions from `src/cogs/` and `src/events/`, then syncs global slash commands with Discord on startup.
 Run `/ping` in Discord to check that the bot responds with `Pong!`.
 Run `/help` to display the command list.
+Run `/level` to display your level and cumulative XP.
 Commands may take some time to appear.
 
 Press `Ctrl+C` in the terminal to stop the bot.
 
 ## Logging
 
-The bot logs the number of synced commands and a successful login at `INFO` level.
+The bot logs the number of synced commands and a successful login at `INFO` level. Login logging is handled by `ReadyCog` in `src/events/ready.py`.
 Unexpected command errors and failures to send error messages are logged at `ERROR` level.
 discord.py logs are limited to `WARNING` and above.
 Log output uses discord.py's formatter, with colors when supported by the terminal.
@@ -75,8 +77,28 @@ Logging is configured once to avoid duplicate output.
 | --- | --- |
 | `/help` | Displays the command list in an embed. |
 | `/ping` | Responds with `Pong!`. |
+| `/level` | Displays your level and cumulative XP in an embed with your display name and avatar. |
 
-Each command can be used once every 5 seconds per user. The cooldowns for `/help` and `/ping` are independent.
+Each command can be used once every 5 seconds per user. The cooldowns for `/help`, `/ping`, and `/level` are independent.
+
+## XP and Levels
+
+Each server message from a non-bot user grants 10 XP. Bot messages and direct messages do not grant XP.
+XP is tracked by Discord user ID and shared across servers where this bot runs.
+Users start at level 1 with 0 XP, and levels are calculated from cumulative XP without spending it.
+
+| Level | Cumulative XP required |
+| --- | --- |
+| 1 | 0 |
+| 2 | 100 |
+| 5 | 3,000 |
+| 10 | 15,000 |
+
+XP is stored in `database/level.db`, relative to the working directory. Run the bot from the project root as shown above.
+The database directory and user table are created automatically when the Cogs load, and existing XP is retained across restarts.
+XP updates run in a worker thread to avoid blocking the bot's event loop.
+SQLite is included in Python, so no separate database server or additional dependency is required.
+The `database/` directory is excluded from Git.
 
 ## Error Handling
 
@@ -89,13 +111,23 @@ If the interaction has already been answered, the bot sends the error message as
 ```text
 Calm/
 ├── src/
-│   ├── bot.py        # Bot entry point and error handler registration
-│   ├── mybot.py      # MyBot, Cog loading, and command synchronization
+│   ├── bot.py            # Bot entry point, intents, and error handler registration
+│   ├── mybot.py          # MyBot, Cog loading, and command synchronization
 │   ├── error_handler.py  # Shared slash command error handling
-│   └── cogs/
+│   ├── cogs/
+│   │   ├── __init__.py
+│   │   ├── getlevel.py   # /level command
+│   │   ├── help.py       # /help command
+│   │   └── ping.py       # /ping command
+│   ├── events/
+│   │   ├── __init__.py
+│   │   ├── ready.py      # Login logging
+│   │   └── xp.py         # Message XP rewards
+│   └── level/
 │       ├── __init__.py
-│       ├── help.py   # /help command
-│       └── ping.py   # /ping command
+│       └── main.py       # SQLite XP storage and level calculation
+├── database/             # Created automatically and excluded from Git
+│   └── level.db          # Persistent user XP
 ├── .env              # Bot token (excluded from Git)
 ├── .gitignore
 ├── pyproject.toml    # Project settings and dependencies
@@ -115,7 +147,8 @@ Create an extension module in `src/cogs/`, following `help.py` or `ping.py`:
 3. Update the command list in `src/cogs/help.py` and this README.
 4. Restart the bot to load the extension and sync the new command with Discord.
 
-`MyBot` automatically loads modules directly inside `src/cogs/` in name order, skipping names that start with `_`.
+`MyBot` automatically loads modules directly inside `src/cogs/`, followed by `src/events/`, sorting each package's modules by name and skipping names that start with `_`.
+Event listeners belong in `src/events/` and use `@commands.Cog.listener()` with the same `async def setup(bot)` registration pattern.
 
 ## Changelog and License
 
