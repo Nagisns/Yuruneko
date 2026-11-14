@@ -29,14 +29,25 @@ class XpRepository:
         )
 
     @staticmethod
-    def add_xp(user_id: int, xp: int) -> None:
-        XpRepository._execute(
-            """
-            INSERT INTO users (user_id, xp) VALUES (?, ?)
-            ON CONFLICT(user_id) DO UPDATE SET xp = users.xp + excluded.xp
-            """,
-            (user_id, xp)
-        )
+    def add_xp(user_id: int, xp: int) -> int:
+        conn = sqlite3.connect("database/level.db")
+        try:
+            row = conn.execute(
+                """
+                INSERT INTO users (user_id, xp) VALUES (?, ?)
+                ON CONFLICT(user_id)
+                DO UPDATE SET xp = users.xp + excluded.xp
+                RETURNING xp
+                """,
+                (user_id, xp),
+            ).fetchone()
+            conn.commit()
+            return row[0]
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
     @staticmethod
     def get_user_xp(user_id: int) -> int:
