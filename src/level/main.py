@@ -51,9 +51,7 @@ class Level:
             conn.close()
 
     @staticmethod
-    def get_user_level(user_id: int) -> int:
-        """Reach levels 2, 5, and 10 at 100, 3000, and 15000 cumulative XP."""
-        xp = Level.get_user_xp(user_id)
+    def calculate_level(xp: int) -> int:
         level = 1
         required_xp = 100
 
@@ -65,3 +63,9 @@ class Level:
                 required_xp += 300 * (level + 1)
 
         return level
+
+    @staticmethod
+    def get_user_level(user_id: int) -> int:
+        """Reach levels 2, 5, and 10 at 100, 3000, and 15000 cumulative XP."""
+        xp = Level.get_user_xp(user_id)
+        return Level.calculate_level(xp)
