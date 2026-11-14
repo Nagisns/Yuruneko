@@ -18,8 +18,8 @@ class GetLevelCog(commands.Cog):
     @app_commands.command(name="level", description="自分のレベルを表示します")
     @app_commands.checks.cooldown(rate=1.0, per=5.0)
     async def level(self, interaction: discord.Interaction) -> None:
-        level: int = Level.get_user_level(user_id=interaction.user.id)
-        xp: int = Level.get_user_xp(user_id=interaction.user.id)
+        xp: int = await asyncio.to_thread(Level.get_user_xp, user_id=interaction.user.id)
+        level: int = Level.calculate_level(xp)
 
         embed: discord.Embed = discord.Embed(
             title=f"🏆 レベル {level}",
