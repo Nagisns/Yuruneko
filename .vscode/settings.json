@@ -3,5 +3,6 @@
         "cogs": "src",
         "events": "src",
         "level": "tools",
+        "role": "tools",
     },
 }
