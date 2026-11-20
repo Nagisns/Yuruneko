@@ -22,6 +22,7 @@ class HelpCog(commands.Cog):
                 `/help` - コマンドの一覧を表示します
                 `/ping` - Botが応答しているか確認します
                 `/level` - 自分のレベルと累計XPを表示します
+                `/add_role` - レベル特典のロールを登録します（ロール管理権限が必要です）
                 """
             ).strip(),
             color=discord.Color.blue(),
